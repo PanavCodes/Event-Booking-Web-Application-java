@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="eventBookingApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse and book tickets for upcoming events — concerts, workshops, hackathons and more.">
+    <title>Events — Event Booking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0F0F1A;
+            color: #EAEAEA;
+            min-height: 100vh;
+        }
+
+        /* ===== NAV ===== */
+        nav {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 0 40px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            text-decoration: none;
+            color: #EAEAEA;
+        }
+        .nav-brand span {
+            background: linear-gradient(135deg, #6C63FF, #FF6584);
+            border-radius: 10px;
+            width: 36px; height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links a {
+            color: #A0A0B8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+        .nav-links a:hover { color: #EAEAEA; background: rgba(255,255,255,0.05); }
+        .nav-links a.active { color: #6C63FF; background: rgba(108,99,255,0.1); }
+        .btn-logout {
+            background: rgba(231, 76, 92, 0.1);
+            border: 1px solid rgba(231, 76, 92, 0.25);
+            color: #E74C5C;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-logout:hover {
+            background: rgba(231, 76, 92, 0.2);
+            border-color: rgba(231, 76, 92, 0.5);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            text-align: center;
+            padding: 56px 40px 32px;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #EAEAEA 0%, #6C63FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            color: #A0A0B8;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+
+        /* ===== SEARCH & FILTER BAR ===== */
+        .filter-bar {
+            max-width: 900px;
+            margin: 0 auto 36px;
+            padding: 0 40px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(26, 26, 46, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #EAEAEA;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-box input:focus {
+            border-color: #6C63FF;
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+        }
+        .search-box input::placeholder { color: #555; }
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #555;
+        }
+        .sort-select {
+            padding: 14px 16px;
+            background: rgba(26, 26, 46, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #EAEAEA;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .sort-select:focus {
+            border-color: #6C63FF;
+        }
+        .sort-select option { background: #1A1A2E; }
+
+        /* ===== EVENT CARDS ===== */
+        .events-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .event-card {
+            background: rgba(26, 26, 46, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeInCard 0.5s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6C63FF, #FF6584);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .event-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(108,99,255,0.25);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .event-card:hover::before { opacity: 1; }
+        @keyframes fadeInCard {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .event-card:nth-child(2) { animation-delay: 0.08s; }
+        .event-card:nth-child(3) { animation-delay: 0.16s; }
+        .event-card:nth-child(4) { animation-delay: 0.24s; }
+        .event-card:nth-child(5) { animation-delay: 0.32s; }
+        .event-card:nth-child(6) { animation-delay: 0.40s; }
+
+        .card-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+        }
+        .badge-available {
+            background: rgba(46, 204, 113, 0.12);
+            color: #2ECC71;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+        .badge-limited {
+            background: rgba(255, 165, 0, 0.12);
+            color: #FFA500;
+            border: 1px solid rgba(255, 165, 0, 0.2);
+        }
+        .badge-soldout {
+            background: rgba(231, 76, 92, 0.12);
+            color: #E74C5C;
+            border: 1px solid rgba(231, 76, 92, 0.2);
+        }
+
+        .event-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.3px;
+        }
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #A0A0B8;
+        }
+        .detail-row .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .detail-row .value {
+            font-weight: 600;
+            color: #EAEAEA;
+        }
+        .price-tag {
+            font-size: 26px;
+            font-weight: 800;
+            color: #6C63FF;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+        .price-tag small {
+            font-size: 13px;
+            font-weight: 400;
+            color: #A0A0B8;
+        }
+        .btn-book {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #6C63FF, #5A52D5);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(108, 99, 255, 0.35);
+        }
+        .btn-book:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: #555;
+            grid-column: 1 / -1;
+        }
+        .empty-state p { font-size: 18px; }
+
+        /* ===== TABLE VIEW ===== */
+        .table-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 40px 60px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(26, 26, 46, 0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        thead th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #A0A0B8;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        tbody td {
+            padding: 16px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+        tbody tr:hover {
+            background: rgba(108, 99, 255, 0.04);
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        .td-name { font-weight: 600; }
+        .td-price { color: #6C63FF; font-weight: 700; }
+        .td-seats { font-weight: 600; }
+        .btn-book-sm {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #6C63FF, #5A52D5);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-book-sm:hover {
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.35);
+        }
+        .btn-book-sm:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ===== VIEW TOGGLE ===== */
+        .view-toggle {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            padding: 0 40px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .view-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: #A0A0B8;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .view-btn.active {
+            background: rgba(108,99,255,0.12);
+            border-color: rgba(108,99,255,0.3);
+            color: #6C63FF;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            nav { padding: 0 20px; }
+            .hero { padding: 36px 20px 20px; }
+            .hero h1 { font-size: 26px; }
+            .filter-bar { padding: 0 20px; flex-direction: column; }
+            .events-grid { padding: 0 20px 40px; grid-template-columns: 1fr; }
+            .table-container { padding: 0 20px 40px; }
+        }
+    </style>
+</head>
+<body ng-controller="EventsController">
+
+    <!-- NAV -->
+    <nav>
+        <a href="events.html" class="nav-brand">
+            <span>🎫</span> EventBooking
+        </a>
+        <div class="nav-links">
+            <a href="events.html" class="active">Events</a>
+            <a href="admin.html" ng-show="role === 'admin'">Admin</a>
+            <button class="btn-logout" id="btnLogout" ng-click="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <h1>Discover Events</h1>
+        <p>Find and book tickets for the best upcoming events</p>
+    </section>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" ng-model="searchQuery">
+        </div>
+        <select class="sort-select" id="sortSelect" ng-model="sortField">
+            <option value="name">Sort by Name</option>
+            <option value="date">Sort by Date</option>
+            <option value="price">Sort by Price</option>
+            <option value="seats">Sort by Seats</option>
+        </select>
+    </div>
+
+    <!-- VIEW TOGGLE -->
+    <div class="view-toggle">
+        <button class="view-btn" ng-class="{'active': viewMode === 'cards'}" ng-click="viewMode = 'cards'" id="btnCardView">🃏 Cards</button>
+        <button class="view-btn" ng-class="{'active': viewMode === 'table'}" ng-click="viewMode = 'table'" id="btnTableView">📋 Table</button>
+    </div>
+
+    <!-- CARD VIEW -->
+    <div class="events-grid" ng-show="viewMode === 'cards'">
+        <div class="event-card" ng-repeat="event in events | filter:searchQuery | orderBy:sortField" id="eventCard_{{event.id}}">
+            <span class="card-badge" ng-class="{'badge-available': event.seats > 20, 'badge-limited': event.seats > 0 && event.seats <= 20, 'badge-soldout': event.seats <= 0}">
+                {{event.seats > 20 ? 'Available' : (event.seats > 0 ? 'Limited' : 'Sold Out')}}
+            </span>
+            <h3>{{event.name}}</h3>
+            <div class="card-details">
+                <div class="detail-row">
+                    <div class="icon">📅</div>
+                    <span>Date: <span class="value">{{event.date}}</span></span>
+                </div>
+                <div class="detail-row">
+                    <div class="icon">💺</div>
+                    <span>Seats: <span class="value">{{event.seats}}</span></span>
+                </div>
+            </div>
+            <div class="price-tag">₹{{event.price}} <small>/ ticket</small></div>
+            <button class="btn-book" ng-click="bookEvent(event)" ng-disabled="event.seats <= 0" id="btnBook_{{event.id}}">
+                {{event.seats > 0 ? 'Book Now →' : 'Sold Out'}}
+            </button>
+        </div>
+        <div class="empty-state" ng-show="(events | filter:searchQuery).length === 0">
+            <p>😔 No events found matching your search</p>
+        </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div class="table-container" ng-show="viewMode === 'table'">
+        <table>
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Date</th>
+                    <th>Price</th>
+                    <th>Available Seats</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="event in events | filter:searchQuery | orderBy:sortField" id="eventRow_{{event.id}}">
+                    <td class="td-name">{{event.name}}</td>
+                    <td>{{event.date}}</td>
+                    <td class="td-price">₹{{event.price}}</td>
+                    <td class="td-seats">{{event.seats}}</td>
+                    <td>
+                        <button class="btn-book-sm" ng-click="bookEvent(event)" ng-disabled="event.seats <= 0">
+                            {{event.seats > 0 ? 'Book' : 'Sold Out'}}
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        var API_BASE = 'http://localhost:3000/api';
+        var app = angular.module('eventBookingApp', []);
+
+        app.controller('EventsController', function($scope, $http) {
+            // Auth check
+            $scope.role = localStorage.getItem('role');
+            if (!$scope.role) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Defaults
+            $scope.searchQuery = '';
+            $scope.sortField = 'name';
+            $scope.viewMode = 'cards';
+            $scope.events = [];
+
+            // Load events from API
+            $http.get(API_BASE + '/events').then(function(response) {
+                $scope.events = response.data;
+            }).catch(function(err) {
+                console.error('Failed to load events:', err);
+            });
+
+            // Book event
+            $scope.bookEvent = function(event) {
+                localStorage.setItem('selectedEventId', event.id);
+                window.location.href = 'booking.html';
+            };
+
+            // Logout
+            $scope.logout = function() {
+                localStorage.removeItem('role');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userName');
+                window.location.href = 'login.html';
+            };
+        });
+    </script>
+</body>
+</html>
