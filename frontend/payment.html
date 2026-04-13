@@ -466,7 +466,9 @@
     <div class="confetti-container" id="confettiContainer" ng-show="confirmed"></div>
 
     <script>
-      var API_BASE = 'https://event-booking-web-application-production-6550.up.railway.app/api';
+     
+        const API_BASE = "http://139.59.85.16:8080/api";
+        fetch(`${API_BASE}/bookings/${userId}`)
         var app = angular.module('eventBookingApp', []);
 
         app.controller('PaymentController', function($scope, $http) {
