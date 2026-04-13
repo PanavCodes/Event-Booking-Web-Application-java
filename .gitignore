@@ -1,23 +1,44 @@
-# Node.js
-backend/node_modules/
-node_modules/
-npm-debug.log
-yarn-error.log
+# ======================
+# Java / Maven
+# ======================
+target/
+*.class
+*.jar
+*.war
+*.ear
 
+# Logs
+*.log
+
+# ======================
+# Spring Boot
+# ======================
+*.pid
+*.seed
+*.pid.lock
+
+# ======================
 # Environment variables
+# ======================
 .env
 .env.local
 
+# ======================
 # IDEs and Editors
+# ======================
 .vscode/
 .idea/
+*.iml
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+*.swp
+*.swo
 
+# ======================
 # OS generated files
+# ======================
 .DS_Store
 .DS_Store?
 ._*
@@ -25,3 +46,11 @@ yarn-error.log
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# ======================
+# Node (if frontend exists)
+# ======================
+node_modules/
+backend/node_modules/
+npm-debug.log
+yarn-error.log
