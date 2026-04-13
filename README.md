@@ -1,6 +1,6 @@
 # 🎫 Event Booking System — Full Stack
 
-A full-stack web application for browsing events, managing events, and booking tickets. Originally built solely with frontend technologies, it has been migrated to use a **Node.js/Express backend** and a **MySQL database**.
+A full-stack web application for browsing events, managing events, and booking tickets. Built with **Spring Boot backend** and **MySQL database**, with a static HTML/AngularJS frontend.
 
 ---
 
@@ -18,16 +18,18 @@ A full-stack web application for browsing events, managing events, and booking t
 
 ---
 
-## 🛠️ Architecture & Technologies Used
+## 🛠️ Tech Stack
 
 ### Frontend
 - **HTML5 & CSS3** (Glassmorphism, dark theme, micro-animations)
-- **AngularJS 1.8.3** (Data binding, controllers, HTTP requests via `$http`)
+- **AngularJS 1.8.3** (Data binding, controllers, HTTP requests)
+- **Vercel** / **Railway Static** (Deployment)
 
 ### Backend
-- **Node.js & Express** (RESTful APIs, static file serving)
-- **MySQL2** (Relational database with connection pooling)
-- **CORS** (Cross-origin resource sharing setup)
+- **Java 17** (Spring Boot 3.2.5)
+- **Spring Data JPA** (ORM)
+- **MySQL** (Relational database)
+- **Railway** (Deployment platform)
 
 ---
 
@@ -35,74 +37,89 @@ A full-stack web application for browsing events, managing events, and booking t
 
 ```
 WP_project/
-├── backend/
-│   ├── server.js          # Main Express server (serves frontend & APIs)
-│   ├── db.js              # MySQL connection pool
-│   ├── DBMS_proj.sql      # Database Schema
-│   ├── package.json       # Node dependencies
-│   └── routes/
-│       ├── users.js       # Login / Auto-register API
-│       ├── events.js      # Event CRUD APIs
-│       └── bookings.js    # Bookings & Payments APIs
+├── backend-spring/           # Spring Boot backend
+│   ├── src/main/
+│   │   ├── java/com/eventbooking/
+│   │   │   ├── controller/   # REST controllers
+│   │   │   ├── model/        # JPA entities
+│   │   │   ├── repository/   # Data repositories
+│   │   │   └── config/       # CORS configuration
+│   │   └── resources/
+│   │       └── application.properties
+│   ├── pom.xml               # Maven dependencies
+│   ├── Procfile              # Railway startup
+│   └── railway.json          # Railway config
 │
-├── frontend/
-│   ├── login.html         # Login page
-│   ├── events.html        # Browse events
-│   ├── admin.html         # Admin dashboard
-│   ├── booking.html       # Ticket booking
-│   └── payment.html       # Payment confirmation
+├── frontend/                 # Static HTML frontend
+│   ├── login.html            # Login page
+│   ├── events.html           # Browse events
+│   ├── admin.html            # Admin dashboard
+│   ├── booking.html          # Ticket booking
+│   ├── payment.html          # Payment confirmation
+│   ├── index.html            # Home page
+│   └── vercel.json           # Vercel config
 │
-└── README.md              # Project documentation
+├── RAILWAY_DEPLOY.md         # Deployment guide
+└── README.md                 # Project documentation
 ```
 
 ---
 
-## ⚙️ How to Run
+## ⚙️ How to Run Locally
 
 ### Prerequisites
-1. **Node.js** installed
-2. **MySQL** installed and running
+1. **Java 17** installed
+2. **Maven** installed
+3. **MySQL** installed and running
 
 ### Step 1: Database Setup
-1. Open MySQL Command Line or Workbench.
-2. Ensure your local MySQL user is `root` with the password `panav` (or update `backend/db.js` if different).
-3. Import the SQL schema file:
-```bash
-mysql -u root -ppanav < backend/DBMS_proj.sql
+1. Create a MySQL database:
+```sql
+CREATE DATABASE event_booking;
 ```
 
 ### Step 2: Start the Backend
-1. Open a terminal in the `backend` folder:
 ```bash
-cd backend
+cd backend-spring
+mvn spring-boot:run
 ```
-2. Install dependencies:
-```bash
-npm install
-```
-3. Start the server (this will automatically seed default accounts and events on the first run):
-```bash
-npm start
-# OR
-node server.js
-```
+The server will auto-seed default admin/user accounts and sample events.
 
 ### Step 3: Access the App
 Open your browser and navigate to:
-👉 **[http://localhost:3000/login.html](http://localhost:3000/login.html)**
+👉 **[http://localhost:8080](http://localhost:8080)**
+
+---
+
+## 🚂 Railway Deployment
+
+### Backend
+```bash
+cd backend-spring
+mvn clean package -DskipTests
+railway init
+railway up
+railway add mysql
+```
+
+### Frontend
+```bash
+cd frontend
+vercel deploy
+```
+
+See `RAILWAY_DEPLOY.md` for detailed deployment steps.
 
 ---
 
 ## 🔑 Login Credentials
 
-The server automatically seeds the following credentials on the first run:
-
 | Role | Email | Password |
 |------|-------|----------|
 | **Admin** | `admin@gmail.com` | `admin123` |
-| **User** | `user@gmail.com` | `admin123` |
+| **User** | `user@gmail.com` | `user123` |
 
-> *Note: If a user enters an email that does not exist in the database, the backend will automatically register them as a new user with the provided password.*
+> *Note: If a user enters an email that does not exist in the database, the backend will automatically register them as a new user.*
 
 ---
 
@@ -110,12 +127,14 @@ The server automatically seeds the following credentials on the first run:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| **GET** | `/api/health` | Health check |
 | **POST** | `/api/login` | Authenticates User/Admin. Auto-registers new users. |
-| **GET**  | `/api/events` | Retrieves all events. |
+| **GET** | `/api/events` | Retrieves all events. |
 | **POST** | `/api/events` | Creates a new event (Admin only). |
-| **PUT**  | `/api/events/:id` | Updates an event (Admin only). |
+| **PUT** | `/api/events/:id` | Updates an event (Admin only). |
 | **DELETE**| `/api/events/:id` | Deletes an event (Admin only). |
 | **POST** | `/api/bookings` | Creates a booking & decrements available seats. |
+| **GET** | `/api/bookings/:userId` | Get user's bookings |
 | **POST** | `/api/payments` | Records a payment for a booking. |
 
 ---
@@ -133,3 +152,4 @@ The server automatically seeds the following credentials on the first run:
 ## 🧑‍💻 Author
 
 **Panav**
+"# Event-Booking-Web-Application-java" 
