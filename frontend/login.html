@@ -302,7 +302,18 @@
     </div>
 
     <script>
-        var API_BASE = 'http://139.59.85.16:8080/api/login';
+        const API_BASE = "http://139.59.85.16:8080/api";
+        fetch(`${API_BASE}/login`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email: email,
+    password: password,
+    role: role
+  })
+})
         var app = angular.module('eventBookingApp', []);
 
         app.controller('LoginController', function($scope, $http) {
