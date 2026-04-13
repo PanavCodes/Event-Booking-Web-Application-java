@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="eventBookingApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin panel — Add, update, and delete events in the Event Booking System.">
+    <title>Admin Panel — Event Booking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0F0F1A;
+            color: #EAEAEA;
+            min-height: 100vh;
+        }
+
+        /* ===== NAV ===== */
+        nav {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 0 40px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            text-decoration: none;
+            color: #EAEAEA;
+        }
+        .nav-brand span {
+            background: linear-gradient(135deg, #6C63FF, #FF6584);
+            border-radius: 10px;
+            width: 36px; height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links a {
+            color: #A0A0B8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+        .nav-links a:hover { color: #EAEAEA; background: rgba(255,255,255,0.05); }
+        .nav-links a.active { color: #6C63FF; background: rgba(108,99,255,0.1); }
+        .btn-logout {
+            background: rgba(231, 76, 92, 0.1);
+            border: 1px solid rgba(231, 76, 92, 0.25);
+            color: #E74C5C;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-logout:hover {
+            background: rgba(231, 76, 92, 0.2);
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            text-align: center;
+            padding: 48px 40px 32px;
+        }
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+            background: linear-gradient(135deg, #EAEAEA 0%, #6C63FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .page-header p {
+            color: #A0A0B8;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+
+        /* ===== ADMIN LAYOUT ===== */
+        .admin-layout {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px 60px;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        /* ===== FORM PANEL ===== */
+        .form-panel {
+            background: rgba(26, 26, 46, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 32px;
+            position: sticky;
+            top: 96px;
+            animation: fadeInCard 0.5s ease both;
+        }
+        @keyframes fadeInCard {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-panel h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #A0A0B8;
+            margin-bottom: 8px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #EAEAEA;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #6C63FF;
+            background: rgba(108, 99, 255, 0.06);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+        }
+        .form-group input::placeholder { color: #555; }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            flex: 1;
+            padding: 13px 16px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-width: 100px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary {
+            background: linear-gradient(135deg, #6C63FF, #5A52D5);
+            color: #fff;
+        }
+        .btn-primary:hover { box-shadow: 0 6px 24px rgba(108,99,255,0.35); }
+        .btn-warning {
+            background: linear-gradient(135deg, #FFA500, #e69500);
+            color: #fff;
+        }
+        .btn-warning:hover { box-shadow: 0 6px 24px rgba(255,165,0,0.35); }
+        .btn-danger {
+            background: linear-gradient(135deg, #E74C5C, #c0392b);
+            color: #fff;
+        }
+        .btn-danger:hover { box-shadow: 0 6px 24px rgba(231,76,92,0.35); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.06);
+            color: #A0A0B8;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .btn-secondary:hover { color: #EAEAEA; background: rgba(255,255,255,0.1); }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            animation: toastIn 0.4s ease both;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .toast-success {
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            color: #2ECC71;
+        }
+        .toast-error {
+            background: rgba(231, 76, 92, 0.15);
+            border: 1px solid rgba(231, 76, 92, 0.3);
+            color: #E74C5C;
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== EVENTS TABLE ===== */
+        .table-panel {
+            animation: fadeInCard 0.5s ease 0.15s both;
+        }
+        .table-panel h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+        .event-count {
+            color: #A0A0B8;
+            font-size: 14px;
+            font-weight: 400;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(26, 26, 46, 0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        thead th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #A0A0B8;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        tbody td {
+            padding: 14px 18px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        tbody tr {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        tbody tr:hover {
+            background: rgba(108, 99, 255, 0.06);
+        }
+        tbody tr.selected {
+            background: rgba(108, 99, 255, 0.1);
+            border-left: 3px solid #6C63FF;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        .td-name { font-weight: 600; }
+        .td-price { color: #6C63FF; font-weight: 700; }
+        .td-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-icon {
+            width: 34px; height: 34px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+        .btn-icon-edit {
+            background: rgba(108, 99, 255, 0.12);
+            color: #6C63FF;
+        }
+        .btn-icon-edit:hover { background: rgba(108, 99, 255, 0.25); }
+        .btn-icon-delete {
+            background: rgba(231, 76, 92, 0.12);
+            color: #E74C5C;
+        }
+        .btn-icon-delete:hover { background: rgba(231, 76, 92, 0.25); }
+
+        .empty-table {
+            text-align: center;
+            padding: 48px;
+            color: #555;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 860px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+                padding: 0 20px 40px;
+            }
+            .form-panel { position: static; }
+            nav { padding: 0 20px; }
+            .page-header { padding: 36px 20px 20px; }
+        }
+    </style>
+</head>
+<body ng-controller="AdminController">
+
+    <!-- NAV -->
+    <nav>
+        <a href="events.html" class="nav-brand">
+            <span>🎫</span> EventBooking
+        </a>
+        <div class="nav-links">
+            <a href="events.html">Events</a>
+            <a href="admin.html" class="active">Admin</a>
+            <button class="btn-logout" id="btnLogout" ng-click="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- HEADER -->
+    <section class="page-header">
+        <h1>Admin Panel</h1>
+        <p>Manage your events — add, update, or delete</p>
+    </section>
+
+    <!-- ADMIN LAYOUT -->
+    <div class="admin-layout">
+
+        <!-- FORM PANEL -->
+        <div class="form-panel">
+            <h2>{{editing ? '✏️ Edit Event' : '➕ Add Event'}}</h2>
+            <form novalidate ng-submit="editing ? updateEvent() : addEvent()">
+                <div class="form-group">
+                    <label for="eventTitle">Event Title</label>
+                    <input type="text" id="eventTitle" ng-model="form.name">
+                </div>
+                <div class="form-group">
+                    <label for="eventDate">Date</label>
+                    <input type="date" id="eventDate" ng-model="form.date">
+                </div>
+                <div class="form-group">
+                    <label for="eventPrice">Price (₹)</label>
+                    <input type="number" id="eventPrice" ng-model="form.price" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="eventSeats">Available Seats</label>
+                    <input type="number" id="eventSeats" ng-model="form.seats" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="btnAdd" ng-show="!editing">➕ Add</button>
+                    <button type="submit" class="btn btn-warning" id="btnUpdate" ng-show="editing">💾 Update</button>
+                    <button type="button" class="btn btn-danger" id="btnDelete" ng-show="editing" ng-click="deleteEvent()">🗑️ Delete</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancel" ng-show="editing" ng-click="cancelEdit()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABLE PANEL -->
+        <div class="table-panel">
+            <h2>All Events <span class="event-count">({{events.length}})</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Price</th>
+                        <th>Seats</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="event in events | orderBy:'id'" ng-click="selectEvent(event)" ng-class="{'selected': editing && selectedId === event.id}" id="eventRow_{{event.id}}">
+                        <td>{{event.id}}</td>
+                        <td class="td-name">{{event.name}}</td>
+                        <td>{{event.date}}</td>
+                        <td class="td-price">₹{{event.price}}</td>
+                        <td>{{event.seats}}</td>
+                        <td>
+                            <div class="td-actions" ng-click="$event.stopPropagation()">
+                                <button class="btn-icon btn-icon-edit" ng-click="selectEvent(event)" title="Edit" id="btnEdit_{{event.id}}">✏️</button>
+                                <button class="btn-icon btn-icon-delete" ng-click="deleteEventById(event.id)" title="Delete" id="btnDel_{{event.id}}">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-table" ng-show="events.length === 0">
+                <p>No events yet. Use the form to add one!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" ng-class="{'toast-success': toast.type === 'success', 'toast-error': toast.type === 'error'}" ng-show="toast.show">
+        {{toast.message}}
+    </div>
+
+    <script>
+        var API_BASE = 'https://event-booking-web-application-production-6550.up.railway.app/api';
+        var app = angular.module('eventBookingApp', []);
+
+        app.controller('AdminController', function($scope, $timeout, $http) {
+            // ===== Route Protection =====
+            if (localStorage.getItem('role') !== 'admin') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // ===== State =====
+            $scope.events = [];
+            $scope.editing = false;
+            $scope.selectedId = null;
+            $scope.form = { name: '', date: '', price: null, seats: null };
+            $scope.toast = { show: false, message: '', type: 'success' };
+
+            // ===== Load events from API =====
+            function loadEvents() {
+                $http.get(API_BASE + '/events').then(function(response) {
+                    $scope.events = response.data;
+                }).catch(function(err) {
+                    showToast('Failed to load events', 'error');
+                });
+            }
+            loadEvents();
+
+            // ===== Helper: Show toast =====
+            function showToast(message, type) {
+                $scope.toast = { show: true, message: message, type: type || 'success' };
+                $timeout(function() {
+                    $scope.toast.show = false;
+                }, 2500);
+            }
+
+            // ===== Helper: Validate form =====
+            function validateForm() {
+                if (!$scope.form.name || !$scope.form.name.trim()) {
+                    showToast('Please enter event title', 'error');
+                    return false;
+                }
+                if (!$scope.form.date) {
+                    showToast('Please select a date', 'error');
+                    return false;
+                }
+                if (!$scope.form.price || $scope.form.price < 0) {
+                    showToast('Please enter a valid price', 'error');
+                    return false;
+                }
+                if (!$scope.form.seats || $scope.form.seats < 0) {
+                    showToast('Please enter valid seat count', 'error');
+                    return false;
+                }
+                return true;
+            }
+
+            // ===== Helper: Format date =====
+            function formatDate(dateVal) {
+                if (typeof dateVal === 'string') return dateVal;
+                var d = new Date(dateVal);
+                return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+            }
+
+            // ===== Add Event (POST API) =====
+            $scope.addEvent = function() {
+                if (!validateForm()) return;
+
+                var dateStr = formatDate($scope.form.date);
+                var adminId = localStorage.getItem('userId') || 1;
+
+                $http.post(API_BASE + '/events', {
+                    name: $scope.form.name.trim(),
+                    date: dateStr,
+                    price: Number($scope.form.price),
+                    seats: Number($scope.form.seats),
+                    adminId: Number(adminId)
+                }).then(function(response) {
+                    loadEvents();
+                    $scope.form = { name: '', date: '', price: null, seats: null };
+                    showToast('✅ Event added successfully!');
+                }).catch(function(err) {
+                    showToast('Failed to add event', 'error');
+                });
+            };
+
+            // ===== Select Event for Editing =====
+            $scope.selectEvent = function(event) {
+                $scope.editing = true;
+                $scope.selectedId = event.id;
+                $scope.form = {
+                    name: event.name,
+                    date: event.date,
+                    price: event.price,
+                    seats: event.seats
+                };
+            };
+
+            // ===== Update Event (PUT API) =====
+            $scope.updateEvent = function() {
+                if (!validateForm()) return;
+
+                var dateStr = formatDate($scope.form.date);
+
+                $http.put(API_BASE + '/events/' + $scope.selectedId, {
+                    name: $scope.form.name.trim(),
+                    date: dateStr,
+                    price: Number($scope.form.price),
+                    seats: Number($scope.form.seats)
+                }).then(function(response) {
+                    loadEvents();
+                    showToast('✅ Event updated successfully!');
+                    $scope.cancelEdit();
+                }).catch(function(err) {
+                    showToast('Failed to update event', 'error');
+                });
+            };
+
+            // ===== Delete Event (DELETE API) =====
+            $scope.deleteEvent = function() {
+                $http.delete(API_BASE + '/events/' + $scope.selectedId).then(function() {
+                    loadEvents();
+                    showToast('🗑️ Event deleted');
+                    $scope.cancelEdit();
+                }).catch(function(err) {
+                    showToast('Failed to delete event', 'error');
+                });
+            };
+
+            $scope.deleteEventById = function(id) {
+                $http.delete(API_BASE + '/events/' + id).then(function() {
+                    loadEvents();
+                    showToast('🗑️ Event deleted');
+                    if ($scope.selectedId === id) {
+                        $scope.cancelEdit();
+                    }
+                }).catch(function(err) {
+                    showToast('Failed to delete event', 'error');
+                });
+            };
+
+            // ===== Cancel Edit =====
+            $scope.cancelEdit = function() {
+                $scope.editing = false;
+                $scope.selectedId = null;
+                $scope.form = { name: '', date: '', price: null, seats: null };
+            };
+
+            // ===== Logout =====
+            $scope.logout = function() {
+                localStorage.removeItem('role');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userName');
+                window.location.href = 'login.html';
+            };
+        });
+    </script>
+</body>
+</html>

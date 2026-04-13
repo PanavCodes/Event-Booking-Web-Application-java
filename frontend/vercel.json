@@ -1,0 +1,9 @@
+{
+  "routes": [
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/events", "dest": "/events.html" },
+    { "src": "/admin", "dest": "/admin.html" },
+    { "src": "/booking", "dest": "/booking.html" },
+    { "src": "/payment", "dest": "/payment.html" }
+  ]
+}
