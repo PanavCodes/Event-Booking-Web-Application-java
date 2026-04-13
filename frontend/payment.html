@@ -466,7 +466,8 @@
     <div class="confetti-container" id="confettiContainer" ng-show="confirmed"></div>
 
     <script>
-        var API_BASE = 'http://localhost:3000/api';
+     
+        const API_BASE = "/api";
         var app = angular.module('eventBookingApp', []);
 
         app.controller('PaymentController', function($scope, $http) {

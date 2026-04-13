@@ -1,155 +1,53 @@
-# 🎫 Event Booking System — Full Stack
+# Event Booking System
 
-A full-stack web application for browsing events, managing events, and booking tickets. Built with **Spring Boot backend** and **MySQL database**, with a static HTML/AngularJS frontend.
+A full-stack Event Booking Web Application designed to allow users to seamlessly browse upcoming events, book tickets, and manage payments. Admins have access to a dedicated dashboard to create, update, and delete events.
 
----
+## 🚀 Features
+- **User Authentication:** Login system distinguishing between regular users and administrators.
+- **Event Discovery:** Search and browse upcoming events, complete with sorting and filtering functionalities.
+- **Ticket Booking:** Select events and reserve seats with real-time seat availability visualization.
+- **Payment Processing:** Integrated mock payment portal simulating transaction handling (UPI, Net Banking, Credit/Debit card).
+- **Admin Dashboard:** Total CRUD (Create, Read, Update, Delete) capability for administrators to manage their event roster.
+- **Responsive Aesthetics:** Designed with Modern UI glassmorphism aesthetics and animated micro-interactions for a premium feel.
 
-## 📸 Features
+## 🛠️ Technology Stack
+- **Frontend:** Vanilla HTML5, CSS3 built with modern design principles (Glassmorphism), and AngularJS for reactive state management.
+- **Backend:** Java 17 Spring Boot, utilizing Spring Data JPA and Hibernate for powerful REST API generation.
+- **Database:** MySQL relational database.
+- **Deployments:**
+  - **Frontend:** Deployed to [Vercel](https://vercel.com/) (configured with reverse proxy rewrites to bypass Mixed Content/CORS restrictions natively).
+  - **Backend:** Designed for deployment on [DigitalOcean App Platform](https://www.digitalocean.com/products/app-platform) / Droplets.
 
-### 👤 User Flow
-- **Login** (Auto-registration for new users)
-- **Browse Events** (Dynamic data from database)
-- **Book Tickets** (Checks availability, reserves seats)
-- **Make Payment** (Records transaction, shows confetti success)
+## 🔌 Setup & Deployment
 
-### 🔧 Admin Flow
-- **Login (Admin)** 
-- **Manage Events** (Add / Update / Delete events via REST APIs)
+### Backend Setup (Local)
+1. Ensure Java 17 and Maven are installed.
+2. Navigate to the `backend` directory.
+3. Feed MySQL properties via environment variables or straight inside `application.properties`: `MYSQLHOST`, `MYSQLUSER`, `MYSQLPASSWORD`, etc.
+4. Compile and run using Maven:
+   ```bash
+   mvn clean install
+   mvn spring-boot:run
+   ```
+5. Backend defaults to running on port `8080`.
 
----
+### Frontend Setup (Local)
+1. Serve the `frontend` directory using any local web server. Example:
+   ```bash
+   npx serve frontend
+   ```
+2. Navigate to the served `login.html`.
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **HTML5 & CSS3** (Glassmorphism, dark theme, micro-animations)
-- **AngularJS 1.8.3** (Data binding, controllers, HTTP requests)
-- **Vercel** / **Railway Static** (Deployment)
-
-### Backend
-- **Java 17** (Spring Boot 3.2.5)
-- **Spring Data JPA** (ORM)
-- **MySQL** (Relational database)
-- **Railway** (Deployment platform)
-
----
-
-## 📁 Project Structure
-
+### Vercel Deployment details (`vercel.json`)
+The frontend is pre-configured to deploy on Vercel gracefully and avoid strict CORS / Mixed content security violations. The repository maps inverse proxies natively:
+```json
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "http://<YOUR_BACKEND_IP>:8080/api/$1" }
+  ]
+}
 ```
-WP_project/
-├── backend-spring/           # Spring Boot backend
-│   ├── src/main/
-│   │   ├── java/com/eventbooking/
-│   │   │   ├── controller/   # REST controllers
-│   │   │   ├── model/        # JPA entities
-│   │   │   ├── repository/   # Data repositories
-│   │   │   └── config/       # CORS configuration
-│   │   └── resources/
-│   │       └── application.properties
-│   ├── pom.xml               # Maven dependencies
-│   ├── Procfile              # Railway startup
-│   └── railway.json          # Railway config
-│
-├── frontend/                 # Static HTML frontend
-│   ├── login.html            # Login page
-│   ├── events.html           # Browse events
-│   ├── admin.html            # Admin dashboard
-│   ├── booking.html          # Ticket booking
-│   ├── payment.html          # Payment confirmation
-│   ├── index.html            # Home page
-│   └── vercel.json           # Vercel config
-│
-├── RAILWAY_DEPLOY.md         # Deployment guide
-└── README.md                 # Project documentation
-```
+Thus, all API requests safely flow through the `/api` route.
 
----
-
-## ⚙️ How to Run Locally
-
-### Prerequisites
-1. **Java 17** installed
-2. **Maven** installed
-3. **MySQL** installed and running
-
-### Step 1: Database Setup
-1. Create a MySQL database:
-```sql
-CREATE DATABASE event_booking;
-```
-
-### Step 2: Start the Backend
-```bash
-cd backend-spring
-mvn spring-boot:run
-```
-The server will auto-seed default admin/user accounts and sample events.
-
-### Step 3: Access the App
-Open your browser and navigate to:
-👉 **[http://localhost:8080](http://localhost:8080)**
-
----
-
-## 🚂 Railway Deployment
-
-### Backend
-```bash
-cd backend-spring
-mvn clean package -DskipTests
-railway init
-railway up
-railway add mysql
-```
-
-### Frontend
-```bash
-cd frontend
-vercel deploy
-```
-
-See `RAILWAY_DEPLOY.md` for detailed deployment steps.
-
----
-
-## 🔑 Login Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| **Admin** | `admin@gmail.com` | `admin123` |
-| **User** | `user@gmail.com` | `user123` |
-
-> *Note: If a user enters an email that does not exist in the database, the backend will automatically register them as a new user.*
-
----
-
-## 📝 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| **GET** | `/api/health` | Health check |
-| **POST** | `/api/login` | Authenticates User/Admin. Auto-registers new users. |
-| **GET** | `/api/events` | Retrieves all events. |
-| **POST** | `/api/events` | Creates a new event (Admin only). |
-| **PUT** | `/api/events/:id` | Updates an event (Admin only). |
-| **DELETE**| `/api/events/:id` | Deletes an event (Admin only). |
-| **POST** | `/api/bookings` | Creates a booking & decrements available seats. |
-| **GET** | `/api/bookings/:userId` | Get user's bookings |
-| **POST** | `/api/payments` | Records a payment for a booking. |
-
----
-
-## 🎨 Design Highlights
-
-- 🌙 **Dark mode** theme across all pages
-- 🪟 **Glassmorphism** card effects with backdrop blur
-- ✨ **Micro-animations** — hover effects, fade-ins, ripple clicks
-- 🎊 **Confetti celebration** on successful payment
-- 🎯 **Step indicator** on payment page (Select → Book → Pay)
-
----
-
-## 🧑‍💻 Author
-
-**Panav**
-"# Event-Booking-Web-Application-java" 
+## 👥 Authors
+- **PanavCodes**
